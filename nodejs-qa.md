@@ -110,3 +110,6 @@ The dns module enables name resolution (converting domain names to IP addresses)
 
 ## What are the key differences between CommonJS and ES modules in Node.js?
 CommonJS (`require/module.exports`) loads synchronously at runtime, while ES modules (`import/export`) are statically analyzed at parse time. ES modules support dynamic imports, top-level await, and better tree-shaking, but require the `"type": "module"` field in package.json.
+
+## What are the phases of the Node.js Event Loop?
+The Event Loop has six phases: timers (executes callbacks from setTimeout/setInterval), pending callbacks (I/O callbacks deferred), idle/prepare (internal use), poll (retrieves new I/O events, executes I/O-related callbacks), check (setImmediate callbacks), and close callbacks (socket.on('close')). Each phase has a FIFO queue of callbacks, and the loop continues until all phases are empty or process.exit() is called.
