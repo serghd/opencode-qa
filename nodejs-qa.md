@@ -113,3 +113,19 @@ CommonJS (`require/module.exports`) loads synchronously at runtime, while ES mod
 
 ## What are the phases of the Node.js Event Loop?
 The Event Loop has six phases: timers (executes callbacks from setTimeout/setInterval), pending callbacks (I/O callbacks deferred), idle/prepare (internal use), poll (retrieves new I/O events, executes I/O-related callbacks), check (setImmediate callbacks), and close callbacks (socket.on('close')). Each phase has a FIFO queue of callbacks, and the loop continues until all phases are empty or process.exit() is called.
+
+## What is the purpose of the vm module in Node.js?
+The vm module allows you to compile and run JavaScript code in isolated V8 virtual machine contexts. It's useful for running untrusted code safely, building sandboxes, or creating REPL environments.
+
+## What is the difference between __dirname and __filename?
+- `__dirname`: Returns the absolute path of the directory containing the currently executing file
+- `__filename`: Returns the absolute path of the currently executing file including the file name
+
+## What is the purpose of the http module in Node.js?
+The http module provides the core functionality to create HTTP servers and make HTTP requests. It handles request parsing, response writing, headers, and status codes without requiring any external framework.
+
+## What is callback waterfall and how is it different from callback hell?
+Callback waterfall is an anti-pattern where multiple asynchronous operations must execute sequentially, each waiting for the previous one to complete. Unlike callback hell (deep nesting), waterfall focuses on the sequential dependency problem. It can be solved using async/await, Promise chaining, or the async library's waterfall method.
+
+## What is the purpose of the querystring module in Node.js?
+The querystring module provides utilities for parsing and formatting URL query strings. It offers methods like `parse()` to convert query strings into objects and `stringify()` to convert objects into query strings.
