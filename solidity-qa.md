@@ -37,3 +37,18 @@ Reentrancy occurs when an external contract calls back into your contract before
 - **transfer**: Reverts on failure, limited to 2300 gas, deprecated in newer Solidity versions
 - **send**: Returns false on failure, limited to 2300 gas, also deprecated
 - **call**: Returns success status and data, forwards all gas by default, recommended approach using `address.call{value: amount}("")`
+
+## What are events and why are they useful?
+Events allow logging data to the blockchain's event log, which is stored off-chain but indexed for efficient querying. They are useful for front-end notifications, debugging, and recording historical state changes cheaply.
+
+## How does inheritance work in Solidity?
+Solidity supports multiple inheritance using the `is` keyword. Contracts can inherit state variables, functions, and modifiers from base contracts. Virtual and override keywords are required when overriding functions.
+
+## What is `delegatecall` and how does it differ from `call`?
+`delegatecall` executes code from another contract but in the context of the calling contract — meaning it uses the caller's storage, balance, and address. It is commonly used for proxy patterns and upgradeable contracts.
+
+## What are custom errors and when should you use them?
+Custom errors (introduced in Solidity 0.8.4) are defined with the `error` keyword and revert with `revert MyError()`. They are more gas-efficient and descriptive than `require` string messages.
+
+## What is the purpose of interfaces and abstract contracts?
+**Interfaces** declare function signatures without implementation and cannot have state variables or constructors. **Abstract contracts** can have partial implementation, state variables, and unimplemented functions. Both define contracts that others must conform to.
