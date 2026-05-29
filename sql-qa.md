@@ -131,3 +131,36 @@ GROUP BY department;
 ## What is a self-join and when would you use it?
 
 A self-join joins a table with itself, treating it as two separate instances using table aliases. It is useful for hierarchical data (e.g., employees and managers in the same table), comparing rows within the same table, or finding duplicates.
+
+## What is a CTE (Common Table Expression) and how is it used?
+
+A CTE is a temporary named result set defined with `WITH` that exists only within the scope of a single `SELECT`, `INSERT`, `UPDATE`, or `DELETE` statement. It improves readability, allows referencing the same subquery multiple times, and supports recursion.
+
+```sql
+-- Non-recursive CTE: find top departments by average salary
+WITH dept_avg AS (
+    SELECT department, AVG(salary) AS avg_salary
+    FROM employees
+    GROUP BY department
+)
+SELECT department, avg_salary
+FROM dept_avg
+WHERE avg_salary > 70000
+ORDER BY avg_salary DESC;
+
+-- Recursive CTE: build org hierarchy
+WITH RECURSIVE org_tree AS (
+    -- anchor: top-level manager
+    SELECT id, name, manager_id, 1 AS level
+    FROM employees
+    WHERE manager_id IS NULL
+    UNION ALL
+    -- recursive: direct reports
+    SELECT e.id, e.name, e.manager_id, t.level + 1
+    FROM employees e
+    JOIN org_tree t ON e.manager_id = t.id
+)
+SELECT name, level
+FROM org_tree
+ORDER BY level, name;
+```
