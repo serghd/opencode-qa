@@ -164,3 +164,39 @@ SELECT name, level
 FROM org_tree
 ORDER BY level, name;
 ```
+
+## What is the difference between `EXISTS` and `IN`?
+
+Both check for the existence of rows in a subquery. `IN` evaluates the subquery once, builds a list of values, and matches against it; it can be slower with large result sets and behaves unexpectedly with `NULL` values. `EXISTS` uses semi-join semantics, evaluates row-by-row with short-circuiting, and typically performs better with large subquery results.
+
+```sql
+-- IN: builds a list of IDs from the subquery
+SELECT name FROM employees
+WHERE department_id IN (
+    SELECT id FROM departments WHERE budget > 100000
+);
+
+-- EXISTS: semi-join, short-circuits on first match
+SELECT name FROM employees e
+WHERE EXISTS (
+    SELECT 1 FROM departments d
+    WHERE d.id = e.department_id AND d.budget > 100000
+);
+```
+
+## What are SQL views and how are they used?
+
+A view is a saved query that behaves like a virtual table. It encapsulates complex logic, restricts access to specific columns or rows (security), and simplifies reporting. Simple views on a single table can be updatable; views with `JOIN`, aggregation, or `DISTINCT` are read-only.
+
+```sql
+-- Create a view that hides salary data and joins tables
+CREATE VIEW active_customer_orders AS
+SELECT c.name, c.email, o.order_date, o.total
+FROM customers c
+JOIN orders o ON c.id = o.customer_id
+WHERE o.status = 'shipped';
+
+-- Query the view like a regular table
+SELECT * FROM active_customer_orders
+WHERE order_date >= '2025-01-01';
+```
