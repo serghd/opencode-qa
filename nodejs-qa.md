@@ -129,3 +129,18 @@ Callback waterfall is an anti-pattern where multiple asynchronous operations mus
 
 ## What is the purpose of the querystring module in Node.js?
 The querystring module provides utilities for parsing and formatting URL query strings. It offers methods like `parse()` to convert query strings into objects and `stringify()` to convert objects into query strings.
+
+## What is the `process` object in Node.js?
+The `process` object is a global that provides information about and control over the current Node.js process. It includes properties like `process.env` for environment variables, `process.argv` for command-line arguments, `process.cwd()` for the current working directory, and methods like `process.exit()` and `process.nextTick()`.
+
+## What is the difference between `exports` and `module.exports`?
+`module.exports` is the actual object returned by `require()`. `exports` is a shorthand reference to `module.exports` (like a variable pointing to it). Assigning properties to `exports` works (e.g., `exports.foo = bar`), but reassigning `exports` directly (e.g., `exports = { foo: bar }`) breaks the reference and does not export anything — you must use `module.exports` for reassignment.
+
+## What is the `fs` (File System) module in Node.js?
+The `fs` module provides an API for interacting with the file system. It offers synchronous (e.g., `fs.readFileSync`), callback-based (e.g., `fs.readFile`), and Promise-based (e.g., `fs.promises.readFile`) methods for common operations like reading, writing, deleting, and watching files and directories.
+
+## What is the `console` object in Node.js?
+The `console` object is a global that provides debugging and logging functionality. It includes methods like `console.log()`, `console.error()`, `console.warn()`, `console.table()`, `console.time()`/`console.timeEnd()`, and `console.trace()`. It writes to `stdout` or `stderr` depending on the method.
+
+## What is libuv and what is its role in Node.js?
+libuv is a multi-platform C library that provides the event loop, asynchronous I/O operations, and the thread pool for Node.js. It handles file system operations, DNS resolution, network I/O, and child process management — enabling Node.js's non-blocking, event-driven behavior on any operating system.
