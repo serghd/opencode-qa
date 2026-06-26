@@ -70,3 +70,9 @@ Libraries are deployed contracts with reusable code that cannot hold Ether or st
 
 ## What is `selfdestruct` and when should it be used?
 `selfdestruct(address)` removes the contract bytecode from the blockchain and sends its remaining Ether balance to the specified address. Use cases include contract cleanup, emergency stops (circuit breakers), and voluntary contract termination. It is deprecated in newer Solidity versions and may be removed in future Ethereum upgrades (EIP-4758).
+
+## What is the `unchecked` block and when is it used?
+Since Solidity 0.8, arithmetic overflow/underflow is checked by default, causing a revert on overflow. The `unchecked` block wraps arithmetic operations where overflow is known to be impossible, saving gas by skipping overflow checks. For example, `for (uint i = 0; i < max; i++)` inside an `unchecked` block lets the iterator wrap without reverting.
+
+## What is inline assembly (`assembly` blocks) in Solidity?
+Inline assembly allows writing raw EVM opcodes inside an `assembly { ... }` block within a Solidity function. It enables gas-efficient operations, direct memory access, custom error handling with `revert()`, and operations not directly expressible in Solidity (e.g., `extcodecopy`, `call` variants with custom flags). It bypasses Solidity's safety guarantees and should be used sparingly, only when the gas savings or low-level control justify the complexity.
