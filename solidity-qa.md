@@ -76,3 +76,13 @@ Since Solidity 0.8, arithmetic overflow/underflow is checked by default, causing
 
 ## What is inline assembly (`assembly` blocks) in Solidity?
 Inline assembly allows writing raw EVM opcodes inside an `assembly { ... }` block within a Solidity function. It enables gas-efficient operations, direct memory access, custom error handling with `revert()`, and operations not directly expressible in Solidity (e.g., `extcodecopy`, `call` variants with custom flags). It bypasses Solidity's safety guarantees and should be used sparingly, only when the gas savings or low-level control justify the complexity.
+
+## What are structs and enums in Solidity?
+**Structs** (`struct`) are custom data types that group related variables together. They can contain value types, mappings, arrays, and other structs. Structs can be used in mappings and arrays, and can be passed between functions using `memory` or `storage` pointers.
+
+**Enums** (`enum`) define a user-defined type with a finite set of named constant values, represented internally as integers starting from 0. They are useful for state machines and status tracking. Enums cannot be declared in interfaces.
+
+## What is CREATE2 and how does it differ from CREATE?
+**CREATE** deploys a contract at an address determined by the deployer's nonce: `address = keccak256(rlp.encode([sender, nonce]))`. The address changes if the deployer creates other contracts first.
+
+**CREATE2** (introduced by EIP-1014) uses a salt and the init code hash: `address = keccak256(0xff ++ sender ++ salt ++ keccak256(init_code))`. This allows deterministic contract addresses independent of nonce, enabling counterfactual deployments, factory patterns with predictable addresses, and deploying to the same address on multiple chains.
