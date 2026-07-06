@@ -86,3 +86,13 @@ Inline assembly allows writing raw EVM opcodes inside an `assembly { ... }` bloc
 **CREATE** deploys a contract at an address determined by the deployer's nonce: `address = keccak256(rlp.encode([sender, nonce]))`. The address changes if the deployer creates other contracts first.
 
 **CREATE2** (introduced by EIP-1014) uses a salt and the init code hash: `address = keccak256(0xff ++ sender ++ salt ++ keccak256(init_code))`. This allows deterministic contract addresses independent of nonce, enabling counterfactual deployments, factory patterns with predictable addresses, and deploying to the same address on multiple chains.
+
+## What are `abi.encode`, `abi.encodePacked`, and `abi.decode` used for?
+- **abi.encode(...)**: Packs arguments as tightly as possible in the ABI specification format, padding each value to 32 bytes. Produces deterministic output suitable for hashing and `keccak256`.
+- **abi.encodePacked(...)**: Packs arguments without padding, concatenating raw bytes. More gas-efficient but can lead to hash collisions if variable-length types are adjacent (use `abi.encode` when hashing for signatures).
+- **abi.decode(data, (types))**: Decodes ABI-encoded bytes back into Solidity types. Commonly used to decode return data from low-level `call` and `staticcall`.
+- **abi.encodeWithSelector(selector, ...)**: Encodes a function selector and its arguments, used to craft calldata for low-level calls.
+- **abi.encodeSignature(string, ...)**: Encodes a function signature string and its arguments, equivalent to `abi.encodeWithSelector(keccak256(signature)[:4], ...)`.
+
+## What is the proxy pattern and how does it enable upgradeable contracts?
+The proxy pattern separates logic from storage using two contracts: a **proxy** (holds state, user-facing address) and an **implementation** (contains logic). The proxy forwards all calls via `delegatecall`, executing the implementation's code in the proxy's storage context. Upgrades are performed by pointing the proxy to a new implementation address. Because `delegatecall` preserves the caller's storage layout, the implementation must adhere to the same storage slot layout — otherwise storage collisions corrupt state. Common proxy variants include the transparent proxy (UUPS) and beacon proxy patterns. This pattern is the foundation of upgradeable contract frameworks like OpenZeppelin Upgrades.
