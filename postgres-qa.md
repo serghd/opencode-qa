@@ -20,3 +20,6 @@ VACUUM reclaims storage occupied by dead tuples (rows deleted/updated by MVCC). 
 
 ## What is EXPLAIN used for?
 `EXPLAIN` shows the query planner's execution plan, including scan type (sequential, index), join strategies, estimated row counts, and costs. `EXPLAIN ANALYZE` actually executes the query and adds actual timing/row counts. It is the primary tool for identifying performance bottlenecks.
+
+## What is WAL in PostgreSQL?
+WAL (Write-Ahead Logging) is a crash-recovery mechanism that ensures durability. Every change is first written to a sequential WAL file on disk before being applied to heap pages. This allows PostgreSQL to replay WAL entries after a crash, restoring the database to a consistent state. WAL also enables replication (streaming, logical) and point-in-time recovery via continuous archiving.
