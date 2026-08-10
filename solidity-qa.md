@@ -96,3 +96,11 @@ Inline assembly allows writing raw EVM opcodes inside an `assembly { ... }` bloc
 
 ## What is the proxy pattern and how does it enable upgradeable contracts?
 The proxy pattern separates logic from storage using two contracts: a **proxy** (holds state, user-facing address) and an **implementation** (contains logic). The proxy forwards all calls via `delegatecall`, executing the implementation's code in the proxy's storage context. Upgrades are performed by pointing the proxy to a new implementation address. Because `delegatecall` preserves the caller's storage layout, the implementation must adhere to the same storage slot layout — otherwise storage collisions corrupt state. Common proxy variants include the transparent proxy (UUPS) and beacon proxy patterns. This pattern is the foundation of upgradeable contract frameworks like OpenZeppelin Upgrades.
+
+## What is the difference between `constant` and `immutable` state variables?
+Both `constant` and `immutable` variables are compile-time optimizations: their values are inlined directly into the bytecode at the usage site, so reading them costs no storage access and saves gas compared to regular state variables.
+
+- **constant**: The value must be assigned at declaration and is fixed at compile time. It can be any expression that does not depend on state or external calls (e.g., literals or `keccak256("...")`). Constants of value types are not stored in storage at all.
+- **immutable**: The value is assigned once, either at declaration or inside the constructor. It can depend on constructor arguments (e.g., the deploying address via `msg.sender`), which makes it ideal for storing configurable values that never change after deployment.
+
+Because immutable values are inlined in the bytecode, they cannot be read via storage, and they bypass the constructor's storage layout — which is why they are safe to use in proxy/upgradeable patterns.
