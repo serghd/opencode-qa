@@ -104,3 +104,6 @@ Both `constant` and `immutable` variables are compile-time optimizations: their 
 - **immutable**: The value is assigned once, either at declaration or inside the constructor. It can depend on constructor arguments (e.g., the deploying address via `msg.sender`), which makes it ideal for storing configurable values that never change after deployment.
 
 Because immutable values are inlined in the bytecode, they cannot be read via storage, and they bypass the constructor's storage layout — which is why they are safe to use in proxy/upgradeable patterns.
+
+## What is a function selector and how does the EVM dispatch function calls?
+A function selector is the first 4 bytes of the `keccak256` hash of the function signature, e.g. the selector for `transfer(address,uint256)` is `bytes4(keccak256("transfer(address,uint256)"))`. It is the first part of the calldata in every transaction and identifies which function to invoke. The EVM compares this selector against the contract's known selectors: on a match it jumps to that function's code; if no selector matches and the calldata is non-empty, it falls back to `fallback()`; if calldata is empty, it invokes `receive()`. Selectors can collide (two different signatures may produce the same 4 bytes), which is why interfaces use overloads and why proxies must map selectors carefully.
