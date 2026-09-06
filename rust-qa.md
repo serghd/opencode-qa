@@ -43,3 +43,59 @@ impl Summary for Article {
 let arr: [i32; 3] = [1, 2, 3];       // fixed-size, stack
 let vec: Vec<i32> = vec![1, 2, 3];    // dynamic, heap
 ```
+
+## What is the difference between borrowing and ownership?
+Ownership means a value has a single owner responsible for deallocating it when it goes out of scope. Borrowing lets you temporarily use a value through a reference (`&T` or `&mut T`) without taking ownership, so the value stays alive while borrowed. Rust enforces this at compile time, preventing data races and use-after-free.
+
+```rust
+fn main() {
+    let s = String::from("hello");
+    let r = &s;              // borrow, not ownership
+    println!("{}", r);       // s still usable afterward
+}
+```
+
+## What is the `Result` enum and how is it used for error handling?
+`Result<T, E>` represents either a success value of type `T` or an error of type `E`. It forces handling of failures at compile time. Common methods are `unwrap()`, `?`, and pattern matching.
+
+```rust
+fn parse(s: &str) -> Result<i32, std::num::ParseIntError> {
+    s.parse()
+}
+
+fn main() -> Result<(), std::num::ParseIntError> {
+    let n: i32 = "42".parse()?;   // ? propagates the error
+    println!("{}", n);
+    Ok(())
+}
+```
+
+## What is the difference between `Option<T>` and `Result<T, E>`?
+- `Option<T>` represents an optional value: either `Some(T)` or `None`. It's for values that may or may not exist.
+- `Result<T, E>` represents an operation that can fail: either `Ok(T)` or `Err(E)`. It's for operations that might produce an error.
+
+`Result` is essentially `Option` extended with error information, and `?` works on both.
+
+## What are generics and how do they work with traits?
+Generics let you write code that works with many types, using type parameters like `<T>`. Combined with trait bounds (`where T: Trait`), they constrain `T` to types that implement a given trait. This provides static dispatch, meaning the compiler generates specialized code per concrete type (monomorphization).
+
+```rust
+fn largest<T: PartialOrd>(list: &[T]) -> &T {
+    let mut largest = &list[0];
+    for item in list {
+        if item > largest { largest = item; }
+    }
+    largest
+}
+```
+
+## What is a lifetime in Rust?
+Lifetimes describe how long references are valid, ensuring references never outlive the data they point to. Most lifetimes are inferred, but for functions returning references you may write annotations like `&'a str` to link the output's lifetime to its inputs.
+
+```rust
+fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() > y.len() { x } else { y }
+}
+```
+
+The `'a` annotation tells the compiler that the returned reference lives as long as the shorter of `x` and `y`.
