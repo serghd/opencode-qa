@@ -99,3 +99,90 @@ fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
 ```
 
 The `'a` annotation tells the compiler that the returned reference lives as long as the shorter of `x` and `y`.
+
+## What is pattern matching in Rust?
+Pattern matching lets you destructure and branch on the shape of values using `match`, `if let`, and `let` chains. Each arm of a `match` must be exhaustive — the compiler forces you to handle every possible case, which eliminates unreachable bugs. Patterns can bind variables, destructure enums and tuples, and use guards (`if` conditions).
+
+```rust
+enum Coin { Penny, Nickel, Dime, Quarter }
+
+fn value_in_cents(coin: Coin) -> u32 {
+    match coin {
+        Coin::Penny    => 1,
+        Coin::Nickel   => 5,
+        Coin::Dime     => 10,
+        Coin::Quarter  => 25,
+    }
+}
+```
+
+## What are closures and what are `Fn`, `FnMut`, and `FnOnce`?
+Closures are anonymous functions that can capture values from their enclosing scope. Rust classifies closures into three traits based on how they use captured values:
+- `FnOnce` — takes ownership of captured values; can be called once.
+- `FnMut` — mutates captured values; can be called multiple times.
+- `Fn` — borrows captured values immutably; can be called multiple times without side effects.
+
+The compiler picks the least restrictive trait that satisfies the closure's usage.
+
+```rust
+let name = String::from("Rust");
+let greet = || println!("Hello, {}", name); // borrows `name` → Fn
+greet();
+greet();
+```
+
+## What are smart pointers and when do you use `Box<T>`, `Rc<T>`, and `Arc<T>`?
+Smart pointers manage heap-allocated data with additional semantics beyond raw pointers:
+- `Box<T>` — single owner, heap-allocated, dropped when it goes out of scope. Use for recursive data structures or large heap objects.
+- `Rc<T>` — reference-counted, multiple owners, single-threaded. Use when you need shared ownership on one thread (e.g., graph nodes).
+- `Arc<T>` — atomic reference-counted, multiple owners, thread-safe. Use for shared state across threads.
+
+```rust
+use std::rc::Rc;
+
+let shared = Rc::new(vec![1, 2, 3]);
+let a = Rc::clone(&shared);
+let b = Rc::clone(&shared);
+println!("{}, {}, {}", shared.len(), a.len(), b.len()); // 3, 3, 3
+```
+
+## What are enums and when should you use them over structs?
+Enums represent a value that is one of several variants. Unlike structs, where a value has all fields at once, enums allow a value to be exactly one variant, with associated data per variant. Use enums when the concept has mutually exclusive cases (e.g., `Result`, `Option`, traffic lights). Structs are for record-like data where all fields coexist.
+
+```rust
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+}
+
+fn process(msg: Message) {
+    match msg {
+        Message::Quit => println!("quit"),
+        Message::Move { x, y } => println!("move to ({}, {})", x, y),
+        Message::Write(text) => println!("write: {}", text),
+    }
+}
+```
+
+## How does concurrency work in Rust?
+Rust provides threads via `std::thread` and communicates through message passing (`mpsc` channels) or shared state (`Mutex<T>`, `Arc<T>`). The ownership system prevents data races at compile time: a `Mutex<T>` can only be accessed when locked, and `Send`/`Sync` marker traits ensure types are safe to transfer/share across threads.
+
+```rust
+use std::sync::{Arc, Mutex};
+use std::thread;
+
+let counter = Arc::new(Mutex::new(0));
+let mut handles = vec![];
+
+for _ in 0..10 {
+    let c = Arc::clone(&counter);
+    handles.push(thread::spawn(move || {
+        let mut num = c.lock().unwrap();
+        *num += 1;
+    }));
+}
+
+for h in handles { h.join().unwrap(); }
+println!("Result: {}", *counter.lock().unwrap()); // 10
+```
