@@ -186,3 +186,81 @@ for _ in 0..10 {
 for h in handles { h.join().unwrap(); }
 println!("Result: {}", *counter.lock().unwrap()); // 10
 ```
+
+## What is `unsafe` Rust and when should you use it?
+`unsafe` Rust lets you opt out of some compiler guarantees for performance or FFI. It unlocks five capabilities: dereferencing raw pointers, calling unsafe functions, accessing mutable statics, implementing unsafe traits, and accessing fields of unions. You should use it only when necessary and encapsulate it behind safe abstractions so callers don't need to worry about invariants.
+
+```rust
+unsafe {
+    let raw = &mut val as *mut i32;
+    *raw = 42;
+}
+```
+
+## What are declarative macros (`macro_rules!`) and how do they differ from functions?
+Macros are expanded at compile time before type checking, generating code from pattern-matched templates. Unlike functions, macros can accept a variable number of arguments, operate on syntax trees, and generate new items (functions, structs, etc.). They are defined with `macro_rules!` and use `$` for metavariables.
+
+```rust
+macro_rules! vec_of {
+    ($($x:expr),* $(,)?) => {
+        {
+            let mut v = Vec::new();
+            $(v.push($x);)*
+            v
+        }
+    };
+}
+
+let v = vec_of![1, 2, 3];
+```
+
+## What is the difference between `impl Trait` and `dyn Trait`?
+- `impl Trait` is static dispatch: the compiler knows the concrete type at compile time and generates specialized code (monomorphization). You cannot store different concrete types behind the same `impl Trait` variable.
+- `dyn Trait` is dynamic dispatch: a trait object (`Box<dyn Trait>`) uses a vtable at runtime to call the correct implementation. It allows heterogeneous collections but adds a small runtime cost.
+
+```rust
+fn make_greeter() -> impl Fn(&str) -> String {   // static, one concrete type
+    |name| format!("Hi, {}", name)
+}
+
+fn make_greeters() -> Vec<Box<dyn Fn(&str) -> String>> { // dynamic, many types
+    vec![
+        Box::new(|n| format!("Hi, {}", n)),
+        Box::new(|n| format!("Hey, {}", n)),
+    ]
+}
+```
+
+## What is the difference between `Send` and `Sync` marker traits?
+- `Send` indicates a type can be transferred to another thread. Almost all types are `Send`; notable exceptions are `Rc<T>` and raw pointers.
+- `Sync` indicates a type can be shared (via `&T`) across threads. If `&T` is `Send`, then `T` is `Sync`.
+
+These traits are auto-imputed by the compiler and cannot be manually implemented safely — implementing them for types that don't satisfy the invariants is `unsafe`.
+
+```rust
+use std::rc::Rc;
+use std::sync::Arc;
+
+fn assert_send<T: Send>() {}
+fn assert_sync<T: Sync>() {}
+
+assert_send::<Arc<i32>>();   // ok — Arc is Send
+assert_sync::<Arc<i32>>();   // ok — Arc is Sync
+// assert_send::<Rc<i32>>(); // would not compile — Rc is !Send
+```
+
+## What is the difference between `&self`, `&mut self`, and `self` in method definitions?
+These are the three forms of receiver for methods defined in an `impl` block:
+- `&self` — borrows the instance immutably; the method can read but not modify the object.
+- `&mut self` — borrows the instance mutably; the method can modify the object.
+- `self` — takes ownership of the instance; the object is moved into the method and dropped when the method returns, unless moved elsewhere.
+
+```rust
+struct Counter { value: i32 }
+
+impl Counter {
+    fn get(&self) -> i32 { self.value }           // borrow only
+    fn increment(&mut self) { self.value += 1; }  // mutate
+    fn into_inner(self) -> i32 { self.value }     // consume
+}
+```
