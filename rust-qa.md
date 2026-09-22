@@ -264,3 +264,74 @@ impl Counter {
     fn into_inner(self) -> i32 { self.value }     // consume
 }
 ```
+
+## How do iterators work in Rust?
+Iterators implement the `Iterator` trait with a `next()` method yielding items one at a time. Adaptor methods like `map`, `filter`, and `fold` are lazy — nothing happens until a consumer method (`collect`, `sum`, `for` loop) forces evaluation. Iterators are zero-cost abstractions: they compile down to the same code as hand-written loops.
+
+```rust
+let sum: i32 = (1..=100)
+    .filter(|n| n % 2 == 0)
+    .map(|n| n * n)
+    .sum();
+```
+
+## What is interior mutability?
+Interior mutability lets you mutate data through a shared reference (`&T`) without `&mut T`, while still upholding borrow rules at runtime. `Cell<T>` and `RefCell<T>` are the single-threaded types — `RefCell` enforces the borrow rules at runtime and panics on violation — while `Mutex<T>` and `Atomic*` are the thread-safe equivalents. Use it when a value must be logically mutable but only immutably accessible (e.g., caching or memoization).
+
+```rust
+use std::cell::RefCell;
+
+let cache = RefCell::new(vec![]);
+cache.borrow_mut().push(1); // mutate through &
+```
+
+## What are the `From` and `Into` traits?
+`From<T>` lets a type define how to be created from another type, and `Into` is automatically implemented whenever `From` exists (blanket impl). They provide a standard, idiomatic way to convert between types instead of ad-hoc constructors or `as` casts.
+
+```rust
+struct Celsius(f64);
+struct Fahrenheit(f64);
+
+impl From<Celsius> for Fahrenheit {
+    fn from(c: Celsius) -> Self {
+        Fahrenheit(c.0 * 9.0 / 5.0 + 32.0)
+    }
+}
+
+let f: Fahrenheit = Fahrenheit::from(Celsius(100.0));
+// or equivalently: let f: Fahrenheit = 100.0.into(); with From<f64>
+```
+
+## What is the `Drop` trait and RAII?
+Rust follows RAII (Resource Acquisition Is Initialization): when a value goes out of scope, its `drop` method is called and its resources (memory, files, locks) are released. You can implement the `Drop` trait for custom cleanup logic, and call `std::mem::drop` explicitly to free a value early. This is how Rust manages resources without a garbage collector.
+
+```rust
+struct Connection { id: u32 }
+
+impl Drop for Connection {
+    fn drop(&mut self) {
+        println!("closing connection {}", self.id);
+    }
+}
+
+{
+    let conn = Connection { id: 1 };
+    // ... use conn
+} // drop runs here automatically
+```
+
+## How does `async`/`await` work in Rust?
+Rust's `async fn` and `.await` are built on the language (not a runtime): an `async` function returns a `Future`, a state machine that the compiler generates via transformation. The caller must poll the future to completion — this requires an async runtime like Tokio or async-std that drives tasks and handles I/O. `Send` bounds on futures determine whether tasks can move between threads.
+
+```rust
+async fn fetch_name() -> String {
+    let body = reqwest::get("https://example.com").await.unwrap();
+    body.text().await.unwrap()
+}
+
+// must be driven by a runtime:
+#[tokio::main]
+async fn main() {
+    println!("{}", fetch_name().await);
+}
+```
