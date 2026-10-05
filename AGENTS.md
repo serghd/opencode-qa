@@ -6,7 +6,7 @@ Q&A markdown files for interview preparation. No code, no build system, no tests
 
 | File | Qs | Topics |
 |------|----|--------|
-| `nodejs-qa.md` | 46 | fundamentals, async, Express, streams, crypto, worker threads |
+| `nodejs-qa.md` | 56 | fundamentals, async, Express, streams, crypto, worker threads |
 | `postgres-qa.md` | 8 | MVCC, indexes, CTEs, VACUUM, EXPLAIN, WAL |
 | `sql-qa.md` | 13 | joins, grouping, subqueries, indexes, CTEs, views |
 | `rust-qa.md` | 25 | ownership, borrowing, String vs &str, traits, Vec vs arrays, Result, Option, generics, lifetimes, pattern matching, closures, smart pointers, enums, concurrency, unsafe, macros, impl vs dyn, Send/Sync, method receivers, iterators, interior mutability, From/Into, Drop/RAII, async/await |

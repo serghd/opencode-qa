@@ -144,3 +144,40 @@ The `console` object is a global that provides debugging and logging functionali
 
 ## What is libuv and what is its role in Node.js?
 libuv is a multi-platform C library that provides the event loop, asynchronous I/O operations, and the thread pool for Node.js. It handles file system operations, DNS resolution, network I/O, and child process management — enabling Node.js's non-blocking, event-driven behavior on any operating system.
+
+## What is the difference between `dependencies` and `devDependencies` in package.json?
+- **dependencies**: Packages required for the application to run in production (e.g., express, pg). Installed with `npm install`.
+- **devDependencies**: Packages used only during development and testing (e.g., jest, eslint). Installed with `npm install --dev` or by default in local development.
+
+## What are the different types of streams in Node.js?
+Node.js has four main stream types:
+- **Readable**: Streams you can read data from (e.g., `fs.createReadStream()`)
+- **Writable**: Streams you can write data to (e.g., `fs.createWriteStream()`)
+- **Duplex**: Streams that are both readable and writable (e.g., TCP sockets)
+- **Transform**: Duplex streams that can modify or transform data as it passes through (e.g., zlib compression streams)
+
+## What is the difference between microtasks and macrotasks in the Event Loop?
+- **Microtasks**: Have higher priority and run after the current operation completes, but before the Event Loop moves to the next phase. Examples include `Promise.then()`, `Promise.catch()`, and `queueMicrotask()`.
+- **Macrotasks**: Lower priority and run in their respective Event Loop phases. Examples include `setTimeout()`, `setInterval()`, `setImmediate()`, and I/O callbacks. Microtasks are always executed completely before any macrotask runs.
+
+## What is the child_process module and when would you use it?
+The `child_process` module allows you to spawn, execute, and communicate with external processes from Node.js. Common methods include `spawn()` (stream-based, best for large data), `exec()` (buffers output, good for short commands), `execFile()` (runs executable directly), and `fork()` (spawns a new Node.js process with IPC). It's useful for running shell commands, parallel processing, or integrating with non-JS tools.
+
+## What is the Node.js module cache?
+When Node.js loads a module via `require()`, it caches the module's exports in `require.cache`. On subsequent `require()` calls for the same module path, Node.js returns the cached instance instead of re-executing the module. This improves performance but means modules are singletons by default. You can clear or inspect `require.cache` if needed.
+
+## What is the assert module in Node.js?
+The assert module provides a set of assertion tests for verifying invariants in your code. It's primarily used for writing unit tests with methods like `assert.strictEqual()`, `assert.deepStrictEqual()`, and `assert.ok()`. While Node.js includes it, many developers prefer dedicated testing frameworks like Jest or Mocha.
+
+## What is the readline module in Node.js?
+The readline module provides an interface for reading data from a readable stream (like `process.stdin`) line by line. It's commonly used to build command-line interfaces (CLIs), interactive prompts, and to process large text files efficiently.
+
+## What is the difference between npm and npx?
+- **npm**: The Node Package Manager used to install, update, and manage dependencies in your project. It can also run scripts defined in package.json.
+- **npx**: A package runner that executes packages without requiring global installation. It's useful for running one-time CLI tools or trying out packages without cluttering your global environment.
+
+## What is the purpose of the url module in Node.js?
+The url module provides utilities for parsing, formatting, and resolving URLs. Node.js supports both the legacy `url.parse()` API and the modern WHATWG URL API (`new URL()`). The WHATWG URL API is recommended in modern Node.js for better standardization and compatibility.
+
+## What is garbage collection in Node.js and how does it work?
+Node.js relies on V8's garbage collector to automatically free up memory by reclaiming objects that are no longer reachable. V8 uses generational garbage collection, which divides objects into young and old generations and applies different collection strategies (scavenge for young objects, mark-sweep/mark-compact for old objects) to optimize performance.
