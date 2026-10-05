@@ -112,7 +112,7 @@ The dns module enables name resolution (converting domain names to IP addresses)
 CommonJS (`require/module.exports`) loads synchronously at runtime, while ES modules (`import/export`) are statically analyzed at parse time. ES modules support dynamic imports, top-level await, and better tree-shaking, but require the `"type": "module"` field in package.json.
 
 ## What are the phases of the Node.js Event Loop and describe them?
-The Event Loop has six phases: timers, pending callbacks, idle/prepare, poll, check, and close callbacks. Each phase has a FIFO queue of callbacks, and the loop continues until all phases are empty or `process.exit()` is called.
+The Event Loop runs in a specific order across six phases: **timers → pending callbacks → idle/prepare → poll → check → close callbacks**. Each phase has a FIFO queue of callbacks, and the loop continues until all phases are empty or `process.exit()` is called.
 
 - **Timers**: Executes callbacks scheduled by `setTimeout()` and `setInterval()` that have reached their delay.
 - **Pending callbacks**: Executes I/O callbacks deferred to the next loop iteration (e.g., TCP errors, certain system operations).
@@ -120,6 +120,8 @@ The Event Loop has six phases: timers, pending callbacks, idle/prepare, poll, ch
 - **Poll**: Retrieves new I/O events and executes I/O-related callbacks. If no timers are ready and no pending I/O, it may block waiting for events.
 - **Check**: Executes callbacks scheduled by `setImmediate()`.
 - **Close callbacks**: Executes close events for resources like sockets (`socket.on('close')`).
+
+**Call order notes:** Microtasks (like `Promise.then()`/`queueMicrotask()`) run after each phase completes and after the current script execution, taking priority over moving to the next phase. Also note that `process.nextTick()` runs before microtasks in the same tick. For example: `process.nextTick()` fires immediately after the current operation before Promises or timers; `setTimeout()` runs in the timers phase; I/O callbacks run in poll; `setImmediate()` runs in check; close callbacks run in the close callbacks phase.
 
 ## What is the purpose of the vm module in Node.js?
 The vm module allows you to compile and run JavaScript code in isolated V8 virtual machine contexts. It's useful for running untrusted code safely, building sandboxes, or creating REPL environments.
