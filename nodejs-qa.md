@@ -190,3 +190,29 @@ The url module provides utilities for parsing, formatting, and resolving URLs. N
 
 ## What is garbage collection in Node.js and how does it work?
 Node.js relies on V8's garbage collector to automatically free up memory by reclaiming objects that are no longer reachable. V8 uses generational garbage collection, which divides objects into young and old generations and applies different collection strategies (scavenge for young objects, mark-sweep/mark-compact for old objects) to optimize performance.
+
+## What is backpressure in Node.js streams?
+Backpressure occurs when a writable or transform stream receives data faster than it can be processed. Instead of buffering everything in memory (which can cause the process to run out of memory), the stream signals the readable source to pause emitting data until the consumer catches up.
+
+You handle it by respecting the return value of `stream.write()`: if it returns `false`, you should wait for the `'drain'` event before writing more. With `pipe()` and `pipeline()`, backpressure is managed automatically, which is one of the main reasons to prefer them over manual `data` event handling for high-throughput data.
+
+## What is the difference between uncaughtException and unhandledRejection?
+- `uncaughtException`: Fired when an exception thrown in the application is not caught. The default behavior is to print the stack trace and terminate the process with a non-zero exit code.
+- `unhandledRejection`: Fired when a Promise is rejected and no rejection handler is attached. In older Node versions the default was to warn; since Node 15 the default is to throw the error and crash the process.
+
+You can listen to both via `process.on('uncaughtException', ...)` and `process.on('unhandledRejection', ...)`. Relying on `uncaughtException` for recovery is discouraged because the application state may be corrupted — it's safer to let the process exit and be restarted by a process manager, using these handlers only for logging and cleanup.
+
+## What is AbortController and how is it used in Node.js?
+AbortController is a Web-standard API available in Node.js for signaling cancellation of asynchronous operations. It creates an `AbortController` instance with a `signal` property (an `AbortSignal`) that you pass to cancellable APIs such as `fetch()`, `setTimeout()`, stream operations, and many database drivers.
+
+Calling `controller.abort()` triggers the signal, causing the associated operation to reject with an `AbortError`. It also supports `AbortSignal.timeout(ms)` for time-based cancellation and `AbortSignal.any([...])` for combining multiple signals, providing a uniform cancellation pattern across Node.js APIs.
+
+## What is the built-in fetch API in Node.js?
+Node.js 18+ ships with a global `fetch()` implementation based on undici, a fast HTTP client. It provides the same Promise-based `Request`, `Response`, `Headers`, and `FormData` objects as the browser fetch API, so code can often be shared between client and server.
+
+Because it's global, no import is required. It uses connection pooling via undici for performance, supports `AbortController` for cancellation, and can stream request and response bodies. For advanced tuning (proxy settings, custom pooling, timeouts) you can use the lower-level undici `Agent`/`Dispatcher` APIs.
+
+## What is globalThis and how does it differ from the global object in Node.js?
+`globalThis` is a standardized (ES2020) property that always references the global object regardless of the runtime environment. In Node.js it points to the same object as the legacy `global` identifier, while in browsers it points to `window` (or `self` in Web Workers).
+
+Before `globalThis`, code had to detect the environment (e.g., check for `window` vs `global`) to access the global object. Using `globalThis` allows writing environment-agnostic code that works in Node.js, browsers, and other JavaScript runtimes without runtime detection. Node.js still supports `global` for backwards compatibility, but `globalThis` is the recommended portable approach.
