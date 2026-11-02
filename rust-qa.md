@@ -335,3 +335,99 @@ async fn main() {
     println!("{}", fetch_name().await);
 }
 ```
+
+## What is deref coercion?
+The `Deref` and `DerefMut` traits let a type behave like a reference to another type, and the compiler automatically applies deref coercion at call sites. A `&String` coerces to `&str`, a `&Vec<T>` to `&[T]`, and a `&Box<T>` to `&T`, which is why functions taking `&str` accept `&String`. `DerefMut` does the same for mutable references and is required for methods that mutate through the target.
+
+```rust
+use std::ops::Deref;
+
+struct Wrapper(String);
+
+impl Deref for Wrapper {
+    type Target = str;
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+let w = Wrapper("hello".to_string());
+let n = w.len(); // deref coercion: Wrapper -> str
+```
+
+## What is the `HashMap` entry API?
+`HashMap::entry` gives you a single lookup that yields an `Entry`, on which you can insert, modify, or compute a value without hashing the key twice. It is the idiomatic way to implement "insert if absent, otherwise update" logic such as counters or grouping.
+
+```rust
+use std::collections::HashMap;
+
+let mut counts = HashMap::new();
+for word in ["a", "b", "a"] {
+    *counts.entry(word).or_insert(0) += 1;
+}
+
+counts.entry("c").or_insert_with(|| 0); // insert only if missing
+counts.entry("a").and_modify(|n| *n += 10).or_insert(0);
+```
+
+## What is the `?` operator?
+The `?` operator propagates errors: it evaluates a `Result` (or `Option`), and on `Err` returns early from the enclosing function, converting the error via `From` if needed; on `Ok` it unwraps the value. It removes most boilerplate `match` chains while keeping error handling explicit and composable through the `From` trait.
+
+```rust
+use std::fs;
+use std::io;
+use std::num::ParseIntError;
+
+#[derive(Debug)]
+enum MyError {
+    Io(io::Error),
+    Parse(ParseIntError),
+}
+
+impl From<io::Error> for MyError {
+    fn from(e: io::Error) -> Self { MyError::Io(e) }
+}
+
+impl From<ParseIntError> for MyError {
+    fn from(e: ParseIntError) -> Self { MyError::Parse(e) }
+}
+
+fn read_number(path: &str) -> Result<i32, MyError> {
+    let text = fs::read_to_string(path)?; // io::Error -> MyError
+    let n = text.trim().parse::<i32>()?;  // ParseIntError -> MyError
+    Ok(n * 2)
+}
+```
+
+## What is `Cow` (clone-on-write)?
+`Cow<'a, B>` ("clone on write") is an enum holding either a borrowed `&B` or an owned `B::Owned`. It lets an API avoid allocations when the input is already suitable while still being able to produce an owned value when a modification is required. It is common in parsing and string normalization.
+
+```rust
+use std::borrow::Cow;
+
+fn normalize(s: &str) -> Cow<'_, str> {
+    if s.contains(' ') {
+        Cow::Owned(s.replace(' ', "_"))
+    } else {
+        Cow::Borrowed(s)
+    }
+}
+```
+
+## How do channels work in Rust?
+`std::sync::mpsc` provides multi-producer, single-consumer channels: `Sender` can be cloned and shared across threads, while `Receiver` is consumed on one thread. Sending moves the value, transferring ownership safely between threads. Combined with `Arc<Mutex<T>>` or used alone, channels are the usual way to communicate between threads instead of sharing mutable state.
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+let (tx, rx) = mpsc::channel();
+for id in 0..3 {
+    let tx = tx.clone();
+    thread::spawn(move || tx.send(id).unwrap());
+}
+drop(tx); // close the original sender so rx terminates
+for msg in rx {
+    println!("got {msg}");
+}
+```
